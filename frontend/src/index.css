@@ -1,0 +1,315 @@
+@import "@fontsource-variable/geist";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 46% 6%;
+    --foreground: 210 33% 98%;
+    --card: 212 40% 10%;
+    --card-foreground: 210 33% 98%;
+    --popover: 212 40% 10%;
+    --popover-foreground: 210 33% 98%;
+    --primary: 154 84% 49%;
+    --primary-foreground: 156 76% 10%;
+    --secondary: 210 28% 18%;
+    --secondary-foreground: 210 33% 98%;
+    --muted: 212 28% 14%;
+    --muted-foreground: 216 15% 65%;
+    --accent: 154 84% 49%;
+    --accent-foreground: 156 76% 10%;
+    --destructive: 352 84% 60%;
+    --border: 214 25% 18%;
+    --input: 214 25% 18%;
+    --ring: 154 84% 49%;
+    --radius: 1rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Geist Variable", sans-serif;
+    background-image: radial-gradient(circle at top, rgba(16, 185, 129, 0.08), transparent 30%);
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.storm-vignette {
+  background:
+    radial-gradient(circle at center, transparent 45%, rgba(0, 0, 0, 0.35) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.4) 100%);
+}
+
+.storm-flash {
+  animation: storm-flash 9s ease-in-out infinite;
+  background: radial-gradient(circle at 42% 27%, rgba(110, 255, 212, 0.08), transparent 18%);
+  mix-blend-mode: screen;
+}
+
+.storm-haze {
+  animation: haze-drift 18s ease-in-out infinite alternate;
+}
+
+.storm-strike {
+  position: absolute;
+  width: 3px;
+  transform-origin: top center;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(130, 255, 214, 0) 0%,
+    rgba(111, 255, 207, 0.55) 12%,
+    rgba(136, 255, 224, 0.95) 35%,
+    rgba(77, 255, 196, 0.75) 68%,
+    rgba(130, 255, 214, 0) 100%
+  );
+  box-shadow:
+    0 0 18px rgba(110, 231, 183, 0.75),
+    0 0 40px rgba(16, 185, 129, 0.28),
+    0 0 80px rgba(52, 211, 153, 0.18);
+  opacity: 0.75;
+}
+
+.storm-strike::before,
+.storm-strike::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 3px;
+  border-radius: 999px;
+  background: inherit;
+  box-shadow: inherit;
+}
+
+.storm-strike-primary {
+  top: 8%;
+  left: 42%;
+  height: 74%;
+  transform: rotate(10deg);
+  animation: lightning-pulse 7.5s ease-in-out infinite;
+}
+
+.storm-strike-primary::before {
+  top: 24%;
+  height: 34%;
+  transform: translateX(-18px) rotate(-24deg);
+}
+
+.storm-strike-primary::after {
+  top: 47%;
+  height: 25%;
+  transform: translateX(14px) rotate(26deg);
+}
+
+.storm-strike-secondary {
+  top: -3%;
+  right: 19%;
+  height: 34%;
+  transform: rotate(22deg);
+  opacity: 0.42;
+  animation: lightning-pulse 10s ease-in-out infinite 1.5s;
+}
+
+.storm-strike-secondary::before {
+  top: 37%;
+  height: 38%;
+  transform: translateX(-12px) rotate(-18deg);
+}
+
+.storm-strike-secondary::after {
+  top: 58%;
+  height: 18%;
+  transform: translateX(11px) rotate(22deg);
+}
+
+.storm-strike-tertiary {
+  bottom: 5%;
+  left: 18%;
+  height: 26%;
+  transform: rotate(-28deg);
+  opacity: 0.22;
+  animation: lightning-pulse 11s ease-in-out infinite 2.4s;
+}
+
+.storm-strike-tertiary::before {
+  top: 28%;
+  height: 24%;
+  transform: translateX(10px) rotate(20deg);
+}
+
+.storm-strike-tertiary::after {
+  top: 45%;
+  height: 20%;
+  transform: translateX(-8px) rotate(-24deg);
+}
+
+.auth-card {
+  position: relative;
+}
+
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(145deg, rgba(110, 231, 183, 0.18), rgba(255, 255, 255, 0.03));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.auth-cta {
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-cta::after {
+  content: "";
+  position: absolute;
+  inset: -40% auto -40% -10%;
+  width: 44%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.12) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: skewX(-24deg);
+  animation: button-sheen 5.8s linear infinite;
+}
+
+.border-beam {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(94, 234, 212, 0.7) 40%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  box-shadow: 0 0 24px rgba(94, 234, 212, 0.35);
+  animation: border-beam 6.5s linear infinite;
+}
+
+@keyframes lightning-pulse {
+  0%,
+  21%,
+  24%,
+  54%,
+  100% {
+    opacity: 0.12;
+    filter: brightness(0.8);
+  }
+
+  22%,
+  23%,
+  50%,
+  52% {
+    opacity: 0.92;
+    filter: brightness(1.55);
+  }
+
+  51% {
+    opacity: 0.52;
+  }
+}
+
+@keyframes storm-flash {
+  0%,
+  18%,
+  100% {
+    opacity: 0;
+  }
+
+  19% {
+    opacity: 0.18;
+  }
+
+  20% {
+    opacity: 0.04;
+  }
+
+  53% {
+    opacity: 0;
+  }
+
+  54% {
+    opacity: 0.12;
+  }
+
+  55% {
+    opacity: 0.03;
+  }
+}
+
+@keyframes haze-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(20px, -14px, 0) scale(1.08);
+  }
+}
+
+@keyframes button-sheen {
+  0% {
+    transform: translateX(-120%) skewX(-24deg);
+  }
+
+  22%,
+  100% {
+    transform: translateX(260%) skewX(-24deg);
+  }
+}
+
+@keyframes border-beam {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(420%);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .storm-strike-primary {
+    left: 64%;
+    height: 44%;
+  }
+
+  .storm-strike-secondary {
+    right: 8%;
+  }
+}
