@@ -29,7 +29,7 @@ public class ScanTests : TestBase
         var assetJson = await asset.Content.ReadAsStringAsync();
         var assetPayload = JObject.Parse(assetJson);
         var assetData = assetPayload["data"]!;
-        var assetId = assetData["id"]!.Value<long>();
+        var assetId = assetData["id"]!.Value<string>()!;
 
         // start scan
         var scan = await Client.PostAsync("/api/scans/start",
@@ -44,12 +44,12 @@ public class ScanTests : TestBase
         var scanJson = await scan.Content.ReadAsStringAsync();
         var scanPayload = JObject.Parse(scanJson);
         var scanData = scanPayload["data"]!;
-        var scanId = scanData["scanId"]!.Value<long>();
+        var scanId = scanData["scanId"]!.Value<string>()!;
 
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var persistedScan = db.Scans.Single(x => x.Id == scanId);
-        var history = db.ScanHistories.Single(x => x.ScanId == scanId);
+        var persistedScan = db.Scans.Single(x => x.Id == Guid.Parse(scanId));
+        var history = db.ScanHistories.Single(x => x.ScanId == Guid.Parse(scanId));
 
         persistedScan.Status.Should().Be(ScanStatus.Pending);
         history.Status.Should().Be(ScanStatus.Pending);

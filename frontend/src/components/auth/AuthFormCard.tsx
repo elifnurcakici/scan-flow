@@ -24,6 +24,7 @@ type AuthFormCardProps = {
   email: string
   password: string
   error: string | null
+  successMessage: string | null
   isSubmitting: boolean
   onModeChange: (mode: AuthMode) => void
   onEmailChange: (value: string) => void
@@ -36,6 +37,7 @@ export function AuthFormCard({
   email,
   password,
   error,
+  successMessage,
   isSubmitting,
   onModeChange,
   onEmailChange,
@@ -74,6 +76,7 @@ export function AuthFormCard({
                 email={email}
                 password={password}
                 error={error}
+                successMessage={successMessage}
                 isSubmitting={isSubmitting}
                 mode={mode}
                 onEmailChange={onEmailChange}
@@ -87,6 +90,7 @@ export function AuthFormCard({
                 email={email}
                 password={password}
                 error={error}
+                successMessage={successMessage}
                 isSubmitting={isSubmitting}
                 mode={mode}
                 onEmailChange={onEmailChange}
@@ -106,6 +110,7 @@ function AuthFormFields({
   email,
   password,
   error,
+  successMessage,
   isSubmitting,
   onEmailChange,
   onPasswordChange,
@@ -115,6 +120,7 @@ function AuthFormFields({
   email: string
   password: string
   error: string | null
+  successMessage: string | null
   isSubmitting: boolean
   onEmailChange: (value: string) => void
   onPasswordChange: (value: string) => void
@@ -166,6 +172,12 @@ function AuthFormFields({
         </FormMessage>
       ) : null}
 
+      {successMessage ? (
+        <FormMessage>
+          {successMessage}
+        </FormMessage>
+      ) : null}
+
       <Button
         type="submit"
         disabled={isSubmitting}
@@ -175,7 +187,9 @@ function AuthFormFields({
           ? mode === "login"
             ? "Signing in..."
             : "Creating account..."
-          : "Continue to dashboard"}
+          : mode === "login"
+            ? "Login"
+            : "Register"}
         <ArrowRight className="ml-2 size-4" />
       </Button>
     </Form>

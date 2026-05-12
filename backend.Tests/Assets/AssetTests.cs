@@ -29,7 +29,7 @@ public class AssetTests : TestBase
         var json = await create.Content.ReadAsStringAsync();
         var payload = JObject.Parse(json);
         var data = payload["data"]!;
-        var assetId = data["id"]!.Value<long>();
+        var assetId = data["id"]!.Value<string>()!;
 
         // GET BY ID
         var get = await Client.GetAsync($"/api/assets/{assetId}");
@@ -55,6 +55,25 @@ public class AssetTests : TestBase
 
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Assets.Any(x => x.Id == assetId).Should().BeFalse();
+        db.Assets.Any(x => x.Id == Guid.Parse(assetId)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Asset_Create_Should_Reject_Duplicates()
+    {
+        await RegisterAndAuthenticateTestUser();
+
+        var payload = new
+        {
+            name = "Customer Portal",
+            domain = "example.com",
+            type = 1
+        };
+
+        var firstCreate = await Client.PostAsync("/api/assets", TestHelper.ToJson(payload));
+        firstCreate.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var duplicateCreate = await Client.PostAsync("/api/assets", TestHelper.ToJson(payload));
+        duplicateCreate.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }

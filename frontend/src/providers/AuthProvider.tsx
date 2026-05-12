@@ -96,7 +96,6 @@ export function AuthProvider({ children }: PropsWithChildren) {
         email,
         password,
       })
-      await login(email, password)
     } finally {
       setIsSubmitting(false)
       setInitialized(true)

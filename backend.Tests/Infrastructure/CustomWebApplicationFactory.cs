@@ -47,6 +47,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             db.Database.EnsureCreated();
+            AppDbSeeder.SeedAsync(db).GetAwaiter().GetResult();
         });
 
         builder.ConfigureAppConfiguration((context, config) =>
@@ -57,7 +58,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["Jwt:Issuer"] = "ScanFlow",
                 ["Jwt:Audience"] = "ScanFlowUsers",
                 ["Jwt:ExpiryMinutes"] = "60",
-                ["Kafka:ScanCreatedTopic"] = "scan-created-test"
+                ["Kafka:DastScanTopic"] = "scan-dast-test",
+                ["Kafka:ScaScanTopic"] = "scan-sca-test",
+                ["Kafka:ScanResultTopic"] = "scan-results-test"
             };
 
             config.AddInMemoryCollection(dict);

@@ -14,12 +14,14 @@ import (
 type Consumer struct {
 	producer *producer.KafkaProducer
 	store    *store.Store
+	profile  scanner.Profile
 }
 
-func NewConsumer(prod *producer.KafkaProducer, dbStore *store.Store) *Consumer {
+func NewConsumer(prod *producer.KafkaProducer, dbStore *store.Store, profile scanner.Profile) *Consumer {
 	return &Consumer{
 		producer: prod,
 		store:    dbStore,
+		profile:  profile,
 	}
 }
 
@@ -63,7 +65,7 @@ func (c *Consumer) Start(brokers []string, topic string) {
 			continue
 		}
 
-		result := scanner.SimulateScan(event.ScanId, event.AssetId)
+		result := scanner.Run(c.profile, event)
 
 		switch result.Status {
 		case "Failed":

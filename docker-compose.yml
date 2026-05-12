@@ -74,7 +74,8 @@ services:
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=scanflow_db;Username=scanflow_user;Password=843038
       Redis__ConnectionString: redis:6379
       Kafka__BootstrapServers: kafka:29092
-      Kafka__ScanCreatedTopic: scan-created
+      Kafka__DastScanTopic: scan-dast
+      Kafka__ScaScanTopic: scan-sca
       Kafka__ScanResultTopic: scan-results
       Jwt__Key: THIS_IS_A_SUPER_SECRET_KEY_FOR_TEST_123456
       Jwt__Issuer: ScanFlow
@@ -85,18 +86,38 @@ services:
       timeout: 5s
       retries: 20
 
-  scanner-service:
+  dast-scanner-service:
     build:
       context: ./scanner-service
-    container_name: scanflow-scanner
+    container_name: scanflow-dast-scanner
     depends_on:
       kafka:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     restart: always
     environment:
       KAFKA_BROKERS: kafka:29092
-      KAFKA_CONSUME_TOPIC: scan-created
+      KAFKA_CONSUME_TOPIC: scan-dast
       KAFKA_PRODUCE_TOPIC: scan-results
+      SCANNER_PROFILE: dast
+      SCANNER_DB_DSN: host=postgres port=5432 user=scanflow_user password=843038 dbname=scanflow_db sslmode=disable
+
+  sca-scanner-service:
+    build:
+      context: ./scanner-service
+    container_name: scanflow-sca-scanner
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      KAFKA_CONSUME_TOPIC: scan-sca
+      KAFKA_PRODUCE_TOPIC: scan-results
+      SCANNER_PROFILE: sca
       SCANNER_DB_DSN: host=postgres port=5432 user=scanflow_user password=843038 dbname=scanflow_db sslmode=disable
 
   frontend:

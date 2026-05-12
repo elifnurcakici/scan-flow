@@ -7,6 +7,7 @@ import (
 
 	"scanflow.scanner/internal/consumer"
 	"scanflow.scanner/internal/producer"
+	"scanflow.scanner/internal/scanner"
 	"scanflow.scanner/internal/store"
 )
 
@@ -16,6 +17,14 @@ func main() {
 
 	consumeTopic := getEnv("KAFKA_CONSUME_TOPIC", "scan-created")
 	produceTopic := getEnv("KAFKA_PRODUCE_TOPIC", "scan-results")
+	profile := scanner.Profile(getEnv("SCANNER_PROFILE", string(scanner.ProfileDast)))
+
+	if err := scanner.ValidateToolAvailability(profile); err != nil {
+		log.Fatalf("Scanner tool is not available: %v", err)
+	}
+	if err := scanner.PrepareRuntime(profile); err != nil {
+		log.Fatalf("Scanner runtime preparation failed: %v", err)
+	}
 
 	dbStore, err := store.New(dsn)
 	if err != nil {
@@ -29,7 +38,7 @@ func main() {
 	}
 	defer prod.Close()
 
-	cons := consumer.NewConsumer(prod, dbStore)
+	cons := consumer.NewConsumer(prod, dbStore, profile)
 	cons.Start(brokers, consumeTopic)
 }
 

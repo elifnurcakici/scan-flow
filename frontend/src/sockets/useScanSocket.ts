@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { baseURL } from '../lib/api'
 
 type Options = {
-  onScanUpdated: (scanId: number) => void
+  onScanUpdated: (payload: { scanId: string; status?: string; assetId?: string }) => void
 }
 
 export function useScanSocket({ onScanUpdated }: Options) {
@@ -27,11 +27,17 @@ export function useScanSocket({ onScanUpdated }: Options) {
       try {
         const payload = JSON.parse(String(event.data)) as {
           type?: string
-          scanId?: number
+          scanId?: string
+          status?: string
+          assetId?: string
         }
 
-        if (payload.type === 'scan_updated' && typeof payload.scanId === 'number') {
-          onScanUpdated(payload.scanId)
+        if (payload.type === 'scan_updated' && typeof payload.scanId === 'string') {
+          onScanUpdated({
+            scanId: payload.scanId,
+            status: payload.status,
+            assetId: payload.assetId,
+          })
         }
       } catch {
       }

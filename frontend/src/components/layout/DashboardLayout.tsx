@@ -1,74 +1,54 @@
 import { Outlet } from "react-router-dom"
-import { Bolt, ChevronDown, LogOut, ShieldCheck, UserCircle2 } from "lucide-react"
+import { LogOut, UserCircle2 } from "lucide-react"
 
+import { AppSidebar } from "@/components/layout/AppSidebar"
 import { StormBackground } from "@/components/effects/StormBackground"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/providers/AuthProvider"
 
 export default function DashboardLayout() {
   const { user, logout, isSubmitting } = useAuth()
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#030b11] text-white">
+    <div className="relative h-screen overflow-hidden bg-slate-950 text-white">
       <StormBackground intensity="low" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1560px] flex-col px-4 py-4 lg:px-6">
-        <header className="mb-4 flex flex-col gap-3 rounded-[24px] border border-emerald-400/10 bg-white/[0.03] px-4 py-3 backdrop-blur-2xl lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-2xl border border-emerald-300/25 bg-emerald-400/10 shadow-[0_0_30px_rgba(16,185,129,0.18)]">
-              <Bolt className="size-4.5 text-emerald-300" />
-            </div>
+      <div className="relative z-10 mx-auto flex h-screen max-w-[1560px] gap-4 px-4 py-4">
+        <div className="hidden h-full lg:block">
+          <AppSidebar />
+        </div>
 
+        <div className="flex min-w-0 flex-1 flex-col gap-4 overflow-hidden">
+          <header className="flex flex-col gap-3 rounded-[24px] border border-slate-800 bg-slate-950/75 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-emerald-300/80">
-                <ShieldCheck className="size-3.5" />
-                ScanFlow Workspace
+              <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-300">
+                Workspace session
               </div>
-              <p className="mt-1 text-xs text-slate-300/75 lg:text-sm">
-                Live view of assets, scans and findings.
+              <p className="mt-2 text-sm text-slate-400">
+                Signed in as {user?.email ?? "unknown user"}
               </p>
             </div>
-          </div>
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300">
+                <UserCircle2 className="size-4" />
+                {user?.email ?? "Unknown user"}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-2xl border-slate-700 bg-slate-900 text-white hover:bg-slate-800"
+                onClick={() => void logout()}
+              >
+                <LogOut className="mr-2 size-4" />
+                {isSubmitting ? "Signing out..." : "Logout"}
+              </Button>
+            </div>
+          </header>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-10 rounded-2xl border-white/10 bg-white/[0.03] px-4 text-white hover:bg-white/[0.08]"
-                >
-                  <UserCircle2 className="mr-2 size-4" />
-                  <span className="max-w-[210px] truncate">{user?.email ?? "Unknown user"}</span>
-                  <ChevronDown className="ml-2 size-4 text-slate-400" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Workspace session</DropdownMenuLabel>
-                <DropdownMenuItem inset className="cursor-default text-slate-300 hover:bg-transparent">
-                  {user?.email ?? "Unknown user"}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => void logout()} className="text-rose-100">
-                  <LogOut className="mr-2 size-4" />
-                  {isSubmitting ? "Signing out..." : "Logout"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-hidden">
-          <Outlet />
-        </main>
+          <main className="min-h-0 min-w-0 flex-1 overflow-hidden">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </div>
   )

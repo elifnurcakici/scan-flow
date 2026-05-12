@@ -57,7 +57,7 @@ public class TestBase : IClassFixture<CustomWebApplicationFactory>
         return tokens.accessToken;
     }
 
-    protected async Task<(long userId, string email)> RegisterAndAuthenticateTestUser()
+    protected async Task<(Guid userId, string email)> RegisterAndAuthenticateTestUser()
     {
         var tokens = await RegisterAndLogin();
 

@@ -18,7 +18,7 @@ public static class TestHelper
             new AuthenticationHeaderValue("Bearer", token);
     }
 
-    public static void SetTestAuth(HttpClient client, long userId, string email)
+    public static void SetTestAuth(HttpClient client, Guid userId, string email)
     {
         client.DefaultRequestHeaders.Authorization = null;
         client.DefaultRequestHeaders.Remove("X-Test-UserId");

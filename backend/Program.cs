@@ -7,6 +7,7 @@ using backend.Services;
 using backend.Services.Interfaces;
 using backend.Services.Kafka;
 using backend.Services.WebSockets;
+using backend.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -64,7 +65,7 @@ else
 }
 
 builder.Services.AddControllers();
-builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateAssetRequestValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -93,7 +94,7 @@ builder.Services
                 var tokenVersionClaim = context.Principal?.FindFirst("tokenVersion")?.Value;
                 var jtiClaim = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
 
-                if (!long.TryParse(userIdClaim, out var userId) ||
+                if (!Guid.TryParse(userIdClaim, out var userId) ||
                     !int.TryParse(tokenVersionClaim, out var tokenVersion) ||
                     string.IsNullOrWhiteSpace(jtiClaim))
                 {
@@ -167,6 +168,7 @@ if (!app.Environment.IsEnvironment("Test"))
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbContext.Database.Migrate();
+    await AppDbSeeder.SeedAsync(dbContext);
 }
 
 #region Middleware
