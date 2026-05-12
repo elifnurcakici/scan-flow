@@ -27,7 +27,7 @@ export type UserProfile = {
   updatedAt: string
 }
 
-export type AssetType = 1 | 2 | 3 | 4
+export type AssetType = 1 | 2 | 3 | 4 | 5 | 6
 
 export type Asset = {
   id: string

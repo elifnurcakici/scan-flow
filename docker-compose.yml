@@ -75,7 +75,11 @@ services:
       Redis__ConnectionString: redis:6379
       Kafka__BootstrapServers: kafka:29092
       Kafka__DastScanTopic: scan-dast
+      Kafka__SastScanTopic: scan-sast
+      Kafka__SecretScanTopic: scan-secretscan
       Kafka__ScaScanTopic: scan-sca
+      Kafka__InfraScanTopic: scan-infra
+      Kafka__CloudScanTopic: scan-cloud
       Kafka__ScanResultTopic: scan-results
       Jwt__Key: THIS_IS_A_SUPER_SECRET_KEY_FOR_TEST_123456
       Jwt__Issuer: ScanFlow
@@ -118,6 +122,74 @@ services:
       KAFKA_CONSUME_TOPIC: scan-sca
       KAFKA_PRODUCE_TOPIC: scan-results
       SCANNER_PROFILE: sca
+      SCANNER_DB_DSN: host=postgres port=5432 user=scanflow_user password=843038 dbname=scanflow_db sslmode=disable
+
+  sast-scanner-service:
+    build:
+      context: ./scanner-service
+    container_name: scanflow-sast-scanner
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      KAFKA_CONSUME_TOPIC: scan-sast
+      KAFKA_PRODUCE_TOPIC: scan-results
+      SCANNER_PROFILE: sast
+      SCANNER_DB_DSN: host=postgres port=5432 user=scanflow_user password=843038 dbname=scanflow_db sslmode=disable
+
+  secretscan-scanner-service:
+    build:
+      context: ./scanner-service
+    container_name: scanflow-secretscan-scanner
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      KAFKA_CONSUME_TOPIC: scan-secretscan
+      KAFKA_PRODUCE_TOPIC: scan-results
+      SCANNER_PROFILE: secretscan
+      SCANNER_DB_DSN: host=postgres port=5432 user=scanflow_user password=843038 dbname=scanflow_db sslmode=disable
+
+  infra-scanner-service:
+    build:
+      context: ./scanner-service
+    container_name: scanflow-infra-scanner
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      KAFKA_CONSUME_TOPIC: scan-infra
+      KAFKA_PRODUCE_TOPIC: scan-results
+      SCANNER_PROFILE: infra
+      SCANNER_DB_DSN: host=postgres port=5432 user=scanflow_user password=843038 dbname=scanflow_db sslmode=disable
+
+  cloud-scanner-service:
+    build:
+      context: ./scanner-service
+    container_name: scanflow-cloud-scanner
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: always
+    environment:
+      KAFKA_BROKERS: kafka:29092
+      KAFKA_CONSUME_TOPIC: scan-cloud
+      KAFKA_PRODUCE_TOPIC: scan-results
+      SCANNER_PROFILE: cloud
       SCANNER_DB_DSN: host=postgres port=5432 user=scanflow_user password=843038 dbname=scanflow_db sslmode=disable
 
   frontend:

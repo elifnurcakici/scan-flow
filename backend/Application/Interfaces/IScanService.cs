@@ -4,5 +4,5 @@ namespace backend.Services.Interfaces;
 
 public interface IScanService
 {
-    Task<Guid> StartScanAsync(Guid userId, CreateScanRequest request);
+    Task<List<Guid>> StartScanAsync(Guid userId, CreateScanRequest request);
 }

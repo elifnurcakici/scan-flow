@@ -121,13 +121,14 @@ public class ScansController : ControllerBase
     public async Task<IActionResult> StartScan(CreateScanRequest request)
     {
         var parsedUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var scanId = await _scanService.StartScanAsync(parsedUserId, request);
+        var scanIds = await _scanService.StartScanAsync(parsedUserId, request);
 
         return Ok(ApiResponse<object>.SuccessResponse(
             new
             {
-                message = "Scan started.",
-                scanId
+                message = scanIds.Count == 1 ? "Scan started." : $"{scanIds.Count} scans started.",
+                scanId = scanIds.First(),
+                scanIds
             },
             HttpContext.TraceIdentifier
         ));

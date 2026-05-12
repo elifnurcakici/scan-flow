@@ -18,8 +18,12 @@ import (
 type Profile string
 
 const (
-	ProfileDast Profile = "dast"
-	ProfileSca  Profile = "sca"
+	ProfileDast       Profile = "dast"
+	ProfileSast       Profile = "sast"
+	ProfileSca        Profile = "sca"
+	ProfileSecretScan Profile = "secretscan"
+	ProfileInfra      Profile = "infra"
+	ProfileCloud      Profile = "cloud"
 )
 
 func Run(profile Profile, event models.ScanCreatedEvent) models.ScanResultEvent {
@@ -29,8 +33,16 @@ func Run(profile Profile, event models.ScanCreatedEvent) models.ScanResultEvent 
 	switch profile {
 	case ProfileDast:
 		return runNuclei(ctx, event)
+	case ProfileInfra:
+		return runNuclei(ctx, event)
+	case ProfileCloud:
+		return runNuclei(ctx, event)
+	case ProfileSast:
+		return runTrivyRepo(ctx, event, "misconfig")
 	case ProfileSca:
-		return runTrivyRepo(ctx, event)
+		return runSca(ctx, event)
+	case ProfileSecretScan:
+		return runTrivyRepo(ctx, event, "secret")
 	default:
 		return failedResult(event, fmt.Sprintf("unsupported scanner profile: %s", profile))
 	}
@@ -70,14 +82,22 @@ func runNuclei(ctx context.Context, event models.ScanCreatedEvent) models.ScanRe
 	}
 }
 
-func runTrivyRepo(ctx context.Context, event models.ScanCreatedEvent) models.ScanResultEvent {
+func runSca(ctx context.Context, event models.ScanCreatedEvent) models.ScanResultEvent {
+	if strings.EqualFold(strings.TrimSpace(event.AssetType), "Image") {
+		return runTrivyImage(ctx, event)
+	}
+
+	return runTrivyRepo(ctx, event, "vuln,misconfig")
+}
+
+func runTrivyRepo(ctx context.Context, event models.ScanCreatedEvent, scanners string) models.ScanResultEvent {
 	cmd := exec.CommandContext(
 		ctx,
 		"trivy",
 		"repo",
 		"--format", "json",
 		"--quiet",
-		"--scanners", "vuln,misconfig,secret",
+		"--scanners", scanners,
 		event.Domain,
 	)
 
@@ -92,6 +112,39 @@ func runTrivyRepo(ctx context.Context, event models.ScanCreatedEvent) models.Sca
 	vulnerabilities, parseErr := parseTrivyJSON(output)
 	if parseErr != nil {
 		return failedResult(event, fmt.Sprintf("trivy output could not be parsed: %s", parseErr.Error()))
+	}
+
+	return models.ScanResultEvent{
+		ScanId:          event.ScanId,
+		AssetId:         event.AssetId,
+		ScannerId:       event.ScannerId,
+		Status:          "Finished",
+		Vulnerabilities: vulnerabilities,
+	}
+}
+
+func runTrivyImage(ctx context.Context, event models.ScanCreatedEvent) models.ScanResultEvent {
+	cmd := exec.CommandContext(
+		ctx,
+		"trivy",
+		"image",
+		"--format", "json",
+		"--quiet",
+		"--scanners", "vuln,misconfig",
+		event.Domain,
+	)
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	output, err := cmd.Output()
+	if err != nil {
+		return failedResult(event, fmt.Sprintf("trivy image execution failed: %s", readCommandError(stderr.Bytes(), err)))
+	}
+
+	vulnerabilities, parseErr := parseTrivyJSON(output)
+	if parseErr != nil {
+		return failedResult(event, fmt.Sprintf("trivy image output could not be parsed: %s", parseErr.Error()))
 	}
 
 	return models.ScanResultEvent{
@@ -138,7 +191,7 @@ type nucleiResult struct {
 			CvssMetric string  `json:"cvss-metrics"`
 		} `json:"classification"`
 	} `json:"info"`
-	TemplateID string `json:"template-id"`
+	TemplateID  string `json:"template-id"`
 	MatcherName string `json:"matcher-name"`
 }
 
@@ -161,7 +214,7 @@ func parseNucleiJSONL(raw string) ([]models.Vulnerability, error) {
 		description := firstNonEmpty(entry.Info.Description, "Detected by nuclei templates.")
 		recommendation := "Review the matched nuclei template and validate whether the exposure is reachable in the target environment."
 		severity := normalizeSeverity(entry.Info.Severity)
-			cweID := resolveCWE(entry.Info.Classification.CweID)
+		cweID := resolveCWE(entry.Info.Classification.CweID)
 		var cvssScore *float64
 		if entry.Info.Classification.CvssScore > 0 {
 			score := entry.Info.Classification.CvssScore
@@ -188,17 +241,17 @@ func parseNucleiJSONL(raw string) ([]models.Vulnerability, error) {
 
 type trivyReport struct {
 	Results []struct {
-		Target            string `json:"Target"`
-		Vulnerabilities   []struct {
-			VulnerabilityID  string             `json:"VulnerabilityID"`
-			PkgName          string             `json:"PkgName"`
-			Title            string             `json:"Title"`
-			Description      string             `json:"Description"`
-			Severity         string             `json:"Severity"`
-			PrimaryURL       string             `json:"PrimaryURL"`
-			FixedVersion     string             `json:"FixedVersion"`
-			CweIDs           []string           `json:"CweIDs"`
-			CVSS             map[string]struct {
+		Target          string `json:"Target"`
+		Vulnerabilities []struct {
+			VulnerabilityID string   `json:"VulnerabilityID"`
+			PkgName         string   `json:"PkgName"`
+			Title           string   `json:"Title"`
+			Description     string   `json:"Description"`
+			Severity        string   `json:"Severity"`
+			PrimaryURL      string   `json:"PrimaryURL"`
+			FixedVersion    string   `json:"FixedVersion"`
+			CweIDs          []string `json:"CweIDs"`
+			CVSS            map[string]struct {
 				V3Score  float64 `json:"V3Score"`
 				V3Vector string  `json:"V3Vector"`
 			} `json:"CVSS"`
@@ -357,9 +410,9 @@ func limitText(value string, max int) string {
 
 func ValidateToolAvailability(profile Profile) error {
 	switch profile {
-	case ProfileDast:
+	case ProfileDast, ProfileInfra, ProfileCloud:
 		return ensureBinary("nuclei")
-	case ProfileSca:
+	case ProfileSca, ProfileSast, ProfileSecretScan:
 		return ensureBinary("trivy")
 	default:
 		return errors.New("unsupported scanner profile")
@@ -368,9 +421,9 @@ func ValidateToolAvailability(profile Profile) error {
 
 func PrepareRuntime(profile Profile) error {
 	switch profile {
-	case ProfileDast:
+	case ProfileDast, ProfileInfra, ProfileCloud:
 		return ensureNucleiTemplates()
-	case ProfileSca:
+	case ProfileSca, ProfileSast, ProfileSecretScan:
 		return nil
 	default:
 		return errors.New("unsupported scanner profile")

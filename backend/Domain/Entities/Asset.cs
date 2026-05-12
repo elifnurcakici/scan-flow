@@ -4,8 +4,10 @@ public enum AssetType
 {
     Domain = 1,
     Ip = 2,
-    WebApp = 3,
-    Repository = 4
+    Image = 3,
+    SourceControl = 4,
+    Cluster = 5,
+    Cloud = 6
 }
 
 public class Asset

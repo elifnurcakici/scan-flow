@@ -25,7 +25,11 @@ public class KafkaTopicInitializerService : IHostedService
         var topics = new[]
         {
             _configuration["Kafka:DastScanTopic"],
+            _configuration["Kafka:SastScanTopic"],
+            _configuration["Kafka:SecretScanTopic"],
             _configuration["Kafka:ScaScanTopic"],
+            _configuration["Kafka:InfraScanTopic"],
+            _configuration["Kafka:CloudScanTopic"],
             _configuration["Kafka:ScanResultTopic"]
         }
         .Where(topic => !string.IsNullOrWhiteSpace(topic))

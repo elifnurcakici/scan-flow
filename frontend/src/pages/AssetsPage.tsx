@@ -12,8 +12,10 @@ import type { ApiResponse, Asset, AssetType } from "@/types/api"
 const assetTypeOptions: { label: string; value: AssetType }[] = [
   { label: "Domain", value: 1 },
   { label: "IP", value: 2 },
-  { label: "Web App", value: 3 },
-  { label: "Repository", value: 4 },
+  { label: "Image", value: 3 },
+  { label: "Source Control", value: 4 },
+  { label: "Cluster", value: 5 },
+  { label: "Cloud", value: 6 },
 ]
 
 export default function AssetsPage() {
@@ -72,7 +74,7 @@ export default function AssetsPage() {
             }}
           >
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Asset name" className="border-slate-800 bg-slate-900 text-white" />
-            <Input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="example.com / repo url" className="border-slate-800 bg-slate-900 text-white" />
+            <Input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="target, repo url, image or cloud endpoint" className="border-slate-800 bg-slate-900 text-white" />
             <Select
               value={String(type)}
               onChange={(event) => setType(Number(event.target.value) as AssetType)}

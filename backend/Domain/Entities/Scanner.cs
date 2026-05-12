@@ -4,7 +4,10 @@ public enum ScannerType
 {
     Dast = 1,
     Sast = 2,
-    Sca = 3
+    Sca = 3,
+    SecretScan = 4,
+    Infra = 5,
+    Cloud = 6
 }
 
 public class Scanner
